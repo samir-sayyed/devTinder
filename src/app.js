@@ -53,7 +53,9 @@ app.post("/signup", async (req, res) =>{
         await user.save()
         res.send("User added successfully")
    }catch(err){
-        res.send("Something went wrong")
+        res.send({
+            error: err.message
+        })
    }
 })
 
