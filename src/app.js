@@ -3,8 +3,54 @@ const connectDB = require("./config/database")
 var app = express();
 var {userAuth} = require("./middleware/auth")
 const User = require("./models/user")
+const {validateSignupData} = require("./util/validateSignupData")
+const bcrypt = require("bcrypt")
+const utils = require("./util/utils")
 
 app.use(express.json())
+
+app.post("/login", async (req, res) => {
+    try{
+        const {emailId, password} = req.body;
+        utils.emailValidaor(emailId);
+        const user = await User.findOne({emailId: emailId});
+        if(!user){
+            throw new Error("Invalid credentials");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if(isPasswordValid){
+            res.send("User logged in successfully");
+        }else{
+            throw new Error("Invalid credentials");
+        }
+
+    }catch(err){
+        res.send("Error: " + err.message)
+    }
+    
+})
+
+app.post("/signup", async (req, res) =>{
+    try{
+         validateSignupData(req.body);
+         const {firstName, lastName, emailId, password} = req.body
+         const hashPassword = await bcrypt.hash(password, 10);
+         const user = new User({
+             firstName,
+             lastName,
+             emailId,
+             password: hashPassword
+         });
+         await user.save()
+         res.send("User added successfully")
+    }catch(err){
+         res.send({
+             error: err.message
+         })
+    }
+ })
 
 app.get("/user", async (req, res) => {
     try{
@@ -47,17 +93,7 @@ app.patch("/user", async (req, res) => {
     }
 })
 
-app.post("/signup", async (req, res) =>{
-   try{
-        const user = new User(req.body);
-        await user.save()
-        res.send("User added successfully")
-   }catch(err){
-        res.send({
-            error: err.message
-        })
-   }
-})
+
 
 connectDB().then(()=>{
     console.log("Database comnnected successfully!")
