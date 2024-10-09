@@ -6,8 +6,12 @@ const User = require("./models/user")
 const {validateSignupData} = require("./util/validateSignupData")
 const bcrypt = require("bcrypt")
 const utils = require("./util/utils")
+const cookieParser = require("cookie-parser")
+var jwt = require('jsonwebtoken');
+const { use } = require("bcrypt/promises");
 
 app.use(express.json())
+app.use(cookieParser())
 
 app.post("/login", async (req, res) => {
     try{
@@ -21,6 +25,8 @@ app.post("/login", async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if(isPasswordValid){
+            var jwyToken = jwt.sign({ _id: user._id }, 'devtindersecretkey');
+            res.cookie("token", jwyToken)
             res.send("User logged in successfully");
         }else{
             throw new Error("Invalid credentials");
@@ -30,6 +36,20 @@ app.post("/login", async (req, res) => {
         res.send("Error: " + err.message)
     }
     
+})
+
+app.get("/profile", async (req, res) =>{
+    try{
+        const cookies = req.cookies;
+        const {token} = cookies
+        var decodedToken = jwt.verify(token, 'devtindersecretkey');
+        console.log(decodedToken)
+        const userId = decodedToken._id
+        const user = await User.findOne({_id: userId})
+        res.send(user)
+    }catch(err){
+        res.status(400).send("Error: " + err.message)
+    }
 })
 
 app.post("/signup", async (req, res) =>{
