@@ -38,14 +38,9 @@ app.post("/login", async (req, res) => {
     
 })
 
-app.get("/profile", async (req, res) =>{
+app.get("/profile", userAuth, async (req, res) =>{
     try{
-        const cookies = req.cookies;
-        const {token} = cookies
-        var decodedToken = jwt.verify(token, 'devtindersecretkey');
-        console.log(decodedToken)
-        const userId = decodedToken._id
-        const user = await User.findOne({_id: userId})
+        var user = req.user
         res.send(user)
     }catch(err){
         res.status(400).send("Error: " + err.message)
