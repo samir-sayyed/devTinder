@@ -21,11 +21,9 @@ app.post("/login", async (req, res) => {
         if(!user){
             throw new Error("Invalid credentials");
         }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
+        const isPasswordValid = user.validatePassword(user.password); 
         if(isPasswordValid){
-            var jwyToken = jwt.sign({ _id: user._id }, 'devtindersecretkey');
+            var jwyToken = user.getJWT();
             res.cookie("token", jwyToken)
             res.send("User logged in successfully");
         }else{
