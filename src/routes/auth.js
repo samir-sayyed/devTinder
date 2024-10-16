@@ -6,7 +6,7 @@ const authRouter = express.Router();
 
 authRouter.post("/signup", async (req, res) =>{
     try{
-         utilsvalidateSignupData(req.body);
+         utils.validateSignupData(req.body);
          const {firstName, lastName, emailId, password} = req.body
          const hashPassword = await bcrypt.hash(password, 10);
          const user = new User({
