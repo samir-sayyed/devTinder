@@ -28,16 +28,16 @@ requestRouter.post(
       }
 
       const existingRequest = await ConnectionRequest.findOne({
-        $or:[
-            {fromUserId, toUserId },
-            {fromUserId: toUserId, toUserId:fromUserId}
-        ]
-      })
+        $or: [
+          { fromUserId, toUserId },
+          { fromUserId: toUserId, toUserId: fromUserId },
+        ],
+      });
 
-      if(existingRequest){
+      if (existingRequest) {
         return res.status(400).json({
-            message:"Request already exist"
-        })
+          message: "Request already exist",
+        });
       }
 
       const request = new ConnectionRequest({
@@ -57,5 +57,41 @@ requestRouter.post(
     }
   }
 );
+
+requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, res) => {
+  try {
+    const { status, requestId } = req.params;
+    const userId = req.user._id;
+    const allowedStatus = ["accepted", "rejected"];
+
+    if (!allowedStatus.includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    console.log(requestId);
+    console.log(userId);
+    const connectionRequest = await ConnectionRequest.findOne({
+      _id: requestId,
+      toUserId: userId,
+      status: "interested",
+    });
+
+    if (!connectionRequest) {
+      return res.status(400).json({
+        message: "Invalid connection request",
+      });
+    }
+
+    connectionRequest.status = status;
+    await connectionRequest.save();
+    res.status(200).json({
+      message: "Request is " + status + " successfulyy!",
+      connectionRequest,
+    });
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
+  }
+});
+
 
 module.exports = requestRouter;
