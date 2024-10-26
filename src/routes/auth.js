@@ -44,9 +44,8 @@ authRouter.post("/signup", async (req, res) =>{
         }else{
             throw new Error("Invalid credentials");
         }
-
     }catch(err){
-        res.send("Error: " + err.message)
+        res.status(400).send("Error: " + err.message)
     }
     
 })

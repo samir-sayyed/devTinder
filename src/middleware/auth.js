@@ -5,7 +5,7 @@ const userAuth =  async (req, res, next) => {
    try{
     const {token}  = req.cookies;
     if(!token){
-        throw new Error("Token not found");
+        return res.status(401).json({message: "Token not found"});
     }
     const decodedToken = jwt.verify(token, 'devtindersecretkey');
 
