@@ -46,8 +46,10 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         return row.fromUserId
     })
 
+    const filteredData = data.filter((connection) => connection._id.toString() !== loggedInUser._id.toString());
+
     res.json({
-      data: data
+      data: filteredData
     });
   } catch (err) {
     res.status(400).send("Error: " + err.message);
