@@ -49,11 +49,15 @@ userSchema.methods.getJWT = function() {
     return jwyToken;
 }
 
-userSchema.methods.validatePassword = async function(userInputPassword){
-    const user = this;
-    const isValidPassword = await bcrypt.compare(userInputPassword, user.password);
-
-    return isValidPassword;
-}
+userSchema.methods.validatePassword = async function(userInputPassword) {
+    try {
+        console.log(userInputPassword)
+        console.log(this.password)
+        return await bcrypt.compare(userInputPassword, this.password);
+    } catch (error) {
+        console.error("Error validating password:", error);
+        return false; // Return false if an error occurs
+    }
+};
 
 module.exports = mongoose.model("User", userSchema)
